@@ -77,16 +77,14 @@ impl Instance {
                 state,
                 button,
                 ..
-            } => {
-                match state{
-                    winit::event::ElementState::Pressed => {
-                        self.raw_input.mouse_down = true;
-                    }
-                    winit::event::ElementState::Released => {
-                        self.raw_input.mouse_down = false;
-                    }
+            } => match state {
+                winit::event::ElementState::Pressed => {
+                    self.raw_input.mouse_down = true;
                 }
-            }
+                winit::event::ElementState::Released => {
+                    self.raw_input.mouse_down = false;
+                }
+            },
             winit::event::WindowEvent::TouchpadPressure {
                 device_id,
                 pressure,
@@ -114,16 +112,17 @@ impl Instance {
         &self.paint_jobs
     }
 
-    pub fn context(&self) -> &egui::Context {
+    pub fn context(&self) -> &Arc<egui::Context> {
         &self.context
     }
 
-    pub fn begin_frame(&mut self) -> egui::Ui {
-        self.context.begin_frame(self.raw_input.clone())
+    pub fn begin_frame(&mut self) {
+        self.context.begin_frame(self.raw_input.clone());
     }
 
     pub fn end_frame(&mut self) {
-        let (_, paint_jobs) = self.context.end_frame();
-        self.paint_jobs = paint_jobs;
+        let (_, (paint_commands)) = self.context.end_frame();
+        self.paint_jobs = self.context.tesselate(paint_commands);
+        log::debug!("{} paint jobs recorded", self.paint_jobs.len())
     }
 }
