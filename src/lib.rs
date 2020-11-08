@@ -123,6 +123,5 @@ impl Instance {
     pub fn end_frame(&mut self) {
         let (_, (paint_commands)) = self.context.end_frame();
         self.paint_jobs = self.context.tesselate(paint_commands);
-        log::debug!("{} paint jobs recorded", self.paint_jobs.len())
     }
 }
